@@ -173,13 +173,13 @@ while True:
         new_coin = Coin()
         coins.add(new_coin)
         all_sprites.add(new_coin)
-    collided_enemies = pygame.sprite.spritecollide(P1, enemies,
-                                                   True)  # True will remove the sprite from 'enemies' group
-    if collided_enemies:
-        LIVES -= 1  # Reduce lives if there is a collision
-        P1.rect.left = 200  # Reset the player's position
-        time.sleep(0.2)  # Brief pause to indicate collision
-
+    for enemy in enemies:
+        if pygame.sprite.collide_rect(P1, enemy):
+            enemy.kill()  # Remove the collided enemy
+            LIVES -= 1
+            P1.rect.left = 200
+            time.sleep(0.2)
+            break
     if LIVES == 0:
         pygame.mixer.Sound('assets/crash.wav').play()
         time.sleep(0.5)
