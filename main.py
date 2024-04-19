@@ -120,21 +120,43 @@ class Win(pygame.sprite.Sprite):
             self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
 
 
+class Health(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("assets/images/heart3.png")
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.rect = self.image.get_rect()
+        self.rect.center = (360, 20)
+
+    def changeState(self, lives_num):
+        self.image = pygame.image.load(f"assets/images/heart{lives_num}.png")
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.rect = self.image.get_rect()
+        self.rect.center = (360, 40)
+
+    def move(self):
+        pass
+
+
 # Setting up Sprites
 P1 = Player()
 E1 = Enemy()
 C1 = Cup()
 W1 = Win()
+H1 = Health()
+
 # Creating Sprites Groups
 enemies = pygame.sprite.Group()
 enemies.add(E1)
 coins = pygame.sprite.Group()
 coins.add(C1)
 win = pygame.sprite.Group()
+health = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(P1)
 all_sprites.add(E1)
 all_sprites.add(C1)
+all_sprites.add(H1)
 
 # Adding a new User event
 INC_SPEED = pygame.USEREVENT
@@ -149,11 +171,10 @@ while True:
     # Cycles through all events occurring
     for event in pygame.event.get():
         if event.type == INC_SPEED:
-            SPEED += 0.5
+            SPEED += 0.3
         if event.type == QUIT:
             pygame.quit()
             # sys.exit()
-    print(level_time_passed)
 
     if level_time_passed >= LEVEL_DURATION:
         start_time = current_time  # Reset timer for the next level
@@ -181,11 +202,8 @@ while True:
 
     DISPLAYSURF.blit(background, (0, 0))
     coin_scores = font_small.render(str(COIN_SCORE), True, BLACK)
-    lives = font_small.render(str(LIVES), True, RED)
     level_score = font_small.render(f"Level - {LEVEL}", True, BLACK)
     DISPLAYSURF.blit(level_score, (10, 10))
-    # DISPLAYSURF.blit(coin_scores, (360, 10))
-    DISPLAYSURF.blit(lives, (360, 10))
 
     for entity in all_sprites:
         DISPLAYSURF.blit(entity.image, entity.rect)
@@ -196,6 +214,9 @@ while True:
         COIN_SCORE += 1
         TOTAL_SCORE += random.randint(0, 10)
         new_coin = Cup()
+        if LIVES != 3:
+            LIVES += 1
+            H1.changeState(LIVES)
         coins.add(new_coin)
         all_sprites.add(new_coin)
     for enemy in list(enemies):  # Iterate over a copy of the list to avoid modification issues during iteration
@@ -203,7 +224,8 @@ while True:
             print(f"Collision with enemy at {enemy.rect}")  # Debug print
             enemy.kill()  # This should only kill the collided enemy
             LIVES -= 1
-            P1.rect.left = 200
+            if LIVES != 0:
+                H1.changeState(LIVES)
             time.sleep(0.2)
             new_enemy = Enemy()
             enemies.add(new_enemy)
