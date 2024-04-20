@@ -62,7 +62,8 @@ def show_intro_screen():
         DISPLAYSURF.blit(intro_text4, (10, 145))  # Позиционирование текста
         DISPLAYSURF.blit(start_text, (20, 400))
         pygame.display.update()
-        FramePerSec.tick(FPS)
+        pygame.mixer.Sound('assets/audio/star_music.mp3').play()
+        FramePerSec.tick(60)
 
 
 pygame.display.set_caption("Game")
@@ -81,8 +82,8 @@ class Enemy(pygame.sprite.Sprite):
         ]
         # Выбор случайного изображения
         self.image = random.choice(self.enemy_images)
-        self.image = pygame.transform.scale(self.image, (100, 100))
-        self.rect = pygame.rect.Rect(self.randomPos, 0, 50, 50)
+        self.image = pygame.transform.scale(self.image, (120, 120))
+        self.rect = pygame.rect.Rect(self.randomPos, 0, 20, 60)
         self.rect.center = (self.randomPos, 0)
 
     def move(self):
@@ -90,7 +91,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.move_ip(0, SPEED)
         if self.rect.top > 600:
             self.image = random.choice(self.enemy_images)
-            self.image = pygame.transform.scale(self.image, (100, 100))
+            self.image = pygame.transform.scale(self.image, (120,120))
             self.rect.top = 0
             self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
 
@@ -99,7 +100,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("assets/images/player.png")
-        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.image = pygame.transform.scale(self.image, (120,120))
         self.rect = pygame.rect.Rect(160, 620, 50, 50)
         self.rect.center = (160, 520)
 
@@ -108,12 +109,12 @@ class Player(pygame.sprite.Sprite):
         if self.rect.top:
             if pressed_keys[K_UP]:
                 self.image = pygame.image.load("assets/images/player2.png")
-                self.image = pygame.transform.scale(self.image, (100, 100))
+                self.image = pygame.transform.scale(self.image, (120,120))
                 self.rect.move_ip(0, -5)
         if self.rect.bottom:
             if pressed_keys[K_DOWN]:
                 self.image = pygame.image.load("assets/images/player.png")
-                self.image = pygame.transform.scale(self.image, (100, 100))
+                self.image = pygame.transform.scale(self.image, (120,120))
                 self.rect.move_ip(0, 5)
 
         if self.rect.left > 0:
@@ -151,28 +152,25 @@ class Win(pygame.sprite.Sprite):
         self.image = pygame.image.load("assets/images/sandwich.png")
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = self.image.get_rect()
-        self.rect.center = (200, 20)
+        self.rect.center = (200, 150)
 
     def move(self):
-        self.rect.move_ip(0, 0)
-        if self.rect.top > 600:
-            self.rect.top = 0
-            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+        pass
 
 
 class Health(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("assets/images/heart3.png")
-        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.image = pygame.transform.scale(self.image, (120, 70))
         self.rect = self.image.get_rect()
-        self.rect.center = (360, 20)
+        self.rect.center = (360, 30)
 
     def changeState(self, lives_num):
         self.image = pygame.image.load(f"assets/images/heart{lives_num}.png")
-        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.image = pygame.transform.scale(self.image, (120, 70))
         self.rect = self.image.get_rect()
-        self.rect.center = (360, 40)
+        self.rect.center = (360, 30)
 
     def move(self):
         pass
@@ -190,7 +188,7 @@ E1 = Enemy()
 C1 = Cup()
 W1 = Win()
 H1 = Health()
-
+E2 = Enemy()
 # Creating Sprites Groups
 enemies = pygame.sprite.Group()
 enemies.add(E1)
@@ -219,7 +217,7 @@ while True:
     # Cycles through all events occurring
     for event in pygame.event.get():
         if event.type == INC_SPEED:
-            SPEED += 0.3
+            SPEED += 0.1
         if event.type == SPAWN_COIN:
             spawnCup()
         if event.type == QUIT:
@@ -234,14 +232,18 @@ while True:
             DISPLAYSURF.fill(GREEN)
             DISPLAYSURF.blit(font_big.render("Kazybek Bi", True, BLACK), (30, 250))
             pygame.display.update()
-            time.sleep(1)
+            time.sleep(1.5)
             background = pygame.image.load("assets/images/kb-background.png")
+            enemies.add(E2)
+            all_sprites.add(E2)
         if LEVEL == 3:
             time.sleep(0.5)
             DISPLAYSURF.fill(RED)
             DISPLAYSURF.blit(font_big.render("Abylai Khan", True, BLACK), (30, 250))
             pygame.display.update()
-            time.sleep(1)
+            time.sleep(1.5)
+            enemies.add(E2)
+            all_sprites.add(E2)
             background = pygame.image.load("assets/images/ab-background.png")
 
         # continue
@@ -254,7 +256,7 @@ while True:
         all_sprites.add(W1)
         if P1.collect_coin(win):
             DISPLAYSURF.fill(GREEN)
-            DISPLAYSURF.blit(game_over, (30, 200))
+            DISPLAYSURF.blit(game_over, (30, 250))
             pygame.display.update()
             time.sleep(2)
             pygame.quit()
@@ -263,7 +265,11 @@ while True:
     DISPLAYSURF.blit(background, (0, 0))
     coin_scores = font_big.render(str(COIN_SCORE), True, BLACK)
     level_score = font_big.render(f"Level - {LEVEL}", True, BLACK)
-    DISPLAYSURF.blit(level_score, (10, 10))
+    if LEVEL > 3:
+        epil = font_big.render("EPILOGUE", True, BLACK)
+        DISPLAYSURF.blit(epil, (10, 10))
+    else:
+        DISPLAYSURF.blit(level_score, (10, 10))
 
     for entity in all_sprites:
         if entity != C1:
@@ -295,7 +301,7 @@ while True:
         time.sleep(0.5)
 
         DISPLAYSURF.fill(RED)
-        DISPLAYSURF.blit(game_over, (30, 200))
+        DISPLAYSURF.blit(game_over, (30, 250))
         pygame.display.update()
         for entity in all_sprites:
             entity.kill()
