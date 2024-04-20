@@ -33,6 +33,7 @@ font_big = pygame.font.Font("assets/fonts/ka1.ttf", 20)
 font_medium = pygame.font.Font("assets/fonts/ka1.ttf", 10)
 font_small = pygame.font.Font("assets/fonts/ka1.ttf", 5)
 game_over = font_biggest.render("Game Over", True, BLACK)
+Won = font_biggest.render("You Won!", True, BLACK)
 # Load images
 background = pygame.image.load("assets/images/pf-background.png")
 
@@ -62,8 +63,7 @@ def show_intro_screen():
         DISPLAYSURF.blit(intro_text4, (10, 145))  # Позиционирование текста
         DISPLAYSURF.blit(start_text, (20, 400))
         pygame.display.update()
-        pygame.mixer.Sound('assets/audio/star_music.mp3').play()
-        FramePerSec.tick(60)
+        FramePerSec.tick(FPS)
 
 
 pygame.display.set_caption("Game")
@@ -101,7 +101,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load("assets/images/player.png")
         self.image = pygame.transform.scale(self.image, (120,120))
-        self.rect = pygame.rect.Rect(160, 620, 50, 50)
+        self.rect = pygame.rect.Rect(160, 620, 30, 50)
         self.rect.center = (160, 520)
 
     def move(self):
@@ -142,8 +142,9 @@ class Cup(pygame.sprite.Sprite):
     def move(self):
         self.rect.move_ip(0, SPEED)
         if self.rect.top > 600:
-            self.rect.top = 0
-            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+            # self.rect.top = 0
+            # self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+            self.kill()
 
 
 class Win(pygame.sprite.Sprite):
@@ -152,7 +153,7 @@ class Win(pygame.sprite.Sprite):
         self.image = pygame.image.load("assets/images/sandwich.png")
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = self.image.get_rect()
-        self.rect.center = (200, 150)
+        self.rect.center = (200, 100)
 
     def move(self):
         pass
@@ -189,6 +190,9 @@ C1 = Cup()
 W1 = Win()
 H1 = Health()
 E2 = Enemy()
+E3 = Enemy()
+E4 = Enemy()
+E5 = Enemy()
 # Creating Sprites Groups
 enemies = pygame.sprite.Group()
 enemies.add(E1)
@@ -208,6 +212,7 @@ SPAWN_COIN = pygame.USEREVENT + 2
 pygame.time.set_timer(INC_SPEED, 1000)
 pygame.time.set_timer(SPAWN_COIN, 5000)
 
+pygame.mixer.Sound('assets/audio/bg_sound.mp3').play(-1).set_volume(0.08)
 # Game Loop
 start_time = pygame.time.get_ticks()  # Start the timer for level duration
 while True:
@@ -217,7 +222,7 @@ while True:
     # Cycles through all events occurring
     for event in pygame.event.get():
         if event.type == INC_SPEED:
-            SPEED += 0.1
+            SPEED += 0.2
         if event.type == SPAWN_COIN:
             spawnCup()
         if event.type == QUIT:
@@ -232,19 +237,26 @@ while True:
             DISPLAYSURF.fill(GREEN)
             DISPLAYSURF.blit(font_big.render("Kazybek Bi", True, BLACK), (30, 250))
             pygame.display.update()
-            time.sleep(1.5)
+            time.sleep(0.5)
             background = pygame.image.load("assets/images/kb-background.png")
             enemies.add(E2)
             all_sprites.add(E2)
+            enemies.add(E3)
+            all_sprites.add(E3)
+            time.sleep(1)
         if LEVEL == 3:
             time.sleep(0.5)
             DISPLAYSURF.fill(RED)
             DISPLAYSURF.blit(font_big.render("Abylai Khan", True, BLACK), (30, 250))
             pygame.display.update()
-            time.sleep(1.5)
-            enemies.add(E2)
-            all_sprites.add(E2)
+            time.sleep(0.5)
             background = pygame.image.load("assets/images/ab-background.png")
+            enemies.add(E4)
+            all_sprites.add(E4)
+            enemies.add(E5)
+            all_sprites.add(E5)
+            time.sleep(1)
+            
 
         # continue
     if LEVEL > 3:
@@ -256,9 +268,10 @@ while True:
         all_sprites.add(W1)
         if P1.collect_coin(win):
             DISPLAYSURF.fill(GREEN)
-            DISPLAYSURF.blit(game_over, (30, 250))
+            DISPLAYSURF.blit(Won, (70, 250))
             pygame.display.update()
-            time.sleep(2)
+            pygame.mixer.Sound('assets/audio/win.mp3').play()
+            time.sleep(3.5)
             pygame.quit()
             sys.exit()
 
@@ -287,6 +300,7 @@ while True:
     for enemy in list(enemies):  # Iterate over a copy of the list to avoid modification issues during iteration
         if pygame.sprite.collide_rect(P1, enemy):
             print(f"Collision with enemy at {enemy.rect}")  # Debug print
+            pygame.mixer.Sound('assets/audio/punch.mp3').play().set_volume(0.2) #sound for collision
             enemy.kill()  # This should only kill the collided enemy
             LIVES -= 1
             if LIVES != 0:
@@ -297,9 +311,9 @@ while True:
             all_sprites.add(new_enemy)
             break  # Ensure we only handle one collision and then exit the loop
     if LIVES == 0:
-        # pygame.mixer.Sound('assets/crash.wav').play()
+        pygame.mixer.Sound('assets/audio/bg_sound.mp3')
+        pygame.mixer.Sound('assets/audio/dead.mp3').play()
         time.sleep(0.5)
-
         DISPLAYSURF.fill(RED)
         DISPLAYSURF.blit(game_over, (30, 250))
         pygame.display.update()
