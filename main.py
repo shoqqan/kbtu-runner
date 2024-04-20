@@ -28,7 +28,7 @@ LEVEL_DURATION = 10000  # 30 seconds in milliseconds
 level_time_passed = 0
 
 # Fonts
-font_biggest = pygame.font.Font("assets/fonts/ka1.TTF", 60)
+font_biggest = pygame.font.Font("assets/fonts/ka1.TTF", 45)
 font_big = pygame.font.Font("assets/fonts/ka1.ttf", 20)
 font_medium = pygame.font.Font("assets/fonts/ka1.ttf", 10)
 font_small = pygame.font.Font("assets/fonts/ka1.ttf", 5)
@@ -254,7 +254,7 @@ while True:
         all_sprites.add(W1)
         if P1.collect_coin(win):
             DISPLAYSURF.fill(GREEN)
-            DISPLAYSURF.blit(game_over, (30, 250))
+            DISPLAYSURF.blit(game_over, (30, 200))
             pygame.display.update()
             time.sleep(2)
             pygame.quit()
@@ -295,8 +295,7 @@ while True:
         time.sleep(0.5)
 
         DISPLAYSURF.fill(RED)
-        DISPLAYSURF.blit(game_over, (30, 250))
-
+        DISPLAYSURF.blit(game_over, (30, 200))
         pygame.display.update()
         for entity in all_sprites:
             entity.kill()
