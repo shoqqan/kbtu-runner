@@ -1,7 +1,8 @@
 import random
-import time
-import pygame
 import sys
+import time
+
+import pygame
 from pygame.locals import *
 
 pygame.init()
@@ -27,22 +28,59 @@ LEVEL_DURATION = 10000  # 30 seconds in milliseconds
 level_time_passed = 0
 
 # Fonts
-font = pygame.font.Font("assets/fonts/ka1.TTF", 60)
-font_small = pygame.font.Font("assets/fonts/ka1.ttf", 20)
-game_over = font.render("Game Over", True, BLACK)
-
+font_biggest = pygame.font.Font("assets/fonts/ka1.TTF", 60)
+font_big = pygame.font.Font("assets/fonts/ka1.ttf", 20)
+font_medium = pygame.font.Font("assets/fonts/ka1.ttf", 10)
+font_small = pygame.font.Font("assets/fonts/ka1.ttf", 5)
+game_over = font_biggest.render("Game Over", True, BLACK)
 # Load images
 background = pygame.image.load("assets/images/pf-background.png")
 
 DISPLAYSURF = pygame.display.set_mode((400, 600))
+
+
+def show_intro_screen():
+    intro = True
+    while intro:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_SPACE:  # Нажатие пробела начинает игру
+                    intro = False
+
+        DISPLAYSURF.fill((245, 245, 220))  # Задний фон
+        intro_text = font_medium.render("Talgat has an EndTerm on statistics.", True, BLACK)
+        intro_text2 = font_medium.render("He's very hungry!", True, BLACK)
+        intro_text3 = font_medium.render("Help Talgat to run to Abylai Khan and buy a sandwich from Serik", True, BLACK)
+        intro_text4 = font_medium.render("to make it to the EndTerm.", True, BLACK)
+        start_text = font_big.render("Press Space to start", True, BLACK)
+        DISPLAYSURF.blit(intro_text, (10, 100))  # Позиционирование текста
+        DISPLAYSURF.blit(intro_text2, (10, 115))  # Позиционирование текста
+        DISPLAYSURF.blit(intro_text3, (10, 130))  # Позиционирование текста
+        DISPLAYSURF.blit(intro_text4, (10, 145))  # Позиционирование текста
+        DISPLAYSURF.blit(start_text, (20, 400))
+        pygame.display.update()
+        FramePerSec.tick(FPS)
+
+
 pygame.display.set_caption("Game")
+show_intro_screen()
 
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.randomPos = random.randint(40, SCREEN_WIDTH - 40)
-        self.image = pygame.image.load(f"assets/images/enemy{random.randint(1, 3)}.png")
+        # Список доступных изображений
+        self.enemy_images = [
+            pygame.image.load("assets/images/enemy1.png"),
+            pygame.image.load("assets/images/enemy2.png"),
+            pygame.image.load("assets/images/enemy3.png")
+        ]
+        # Выбор случайного изображения
+        self.image = random.choice(self.enemy_images)
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = pygame.rect.Rect(self.randomPos, 0, 50, 50)
         self.rect.center = (self.randomPos, 0)
@@ -51,6 +89,8 @@ class Enemy(pygame.sprite.Sprite):
         global SCORE
         self.rect.move_ip(0, SPEED)
         if self.rect.top > 600:
+            self.image = random.choice(self.enemy_images)
+            self.image = pygame.transform.scale(self.image, (100, 100))
             self.rect.top = 0
             self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
 
@@ -138,6 +178,12 @@ class Health(pygame.sprite.Sprite):
         pass
 
 
+def spawnCup():
+    new_coin = Cup()
+    coins.add(new_coin)
+    all_sprites.add(new_coin)
+
+
 # Setting up Sprites
 P1 = Player()
 E1 = Enemy()
@@ -159,8 +205,10 @@ all_sprites.add(C1)
 all_sprites.add(H1)
 
 # Adding a new User event
-INC_SPEED = pygame.USEREVENT
+INC_SPEED = pygame.USEREVENT + 1
+SPAWN_COIN = pygame.USEREVENT + 2
 pygame.time.set_timer(INC_SPEED, 1000)
+pygame.time.set_timer(SPAWN_COIN, 5000)
 
 # Game Loop
 start_time = pygame.time.get_ticks()  # Start the timer for level duration
@@ -172,6 +220,8 @@ while True:
     for event in pygame.event.get():
         if event.type == INC_SPEED:
             SPEED += 0.3
+        if event.type == SPAWN_COIN:
+            spawnCup()
         if event.type == QUIT:
             pygame.quit()
             # sys.exit()
@@ -180,16 +230,26 @@ while True:
         start_time = current_time  # Reset timer for the next level
         LEVEL += 1
         if LEVEL == 2:
-            background = pygame.image.load("assets/images/ab-background.png")
-        if LEVEL == 3:
+            time.sleep(0.5)
+            DISPLAYSURF.fill(GREEN)
+            DISPLAYSURF.blit(font_big.render("Kazybek Bi", True, BLACK), (30, 250))
+            pygame.display.update()
+            time.sleep(1)
             background = pygame.image.load("assets/images/kb-background.png")
+        if LEVEL == 3:
+            time.sleep(0.5)
+            DISPLAYSURF.fill(RED)
+            DISPLAYSURF.blit(font_big.render("Abylai Khan", True, BLACK), (30, 250))
+            pygame.display.update()
+            time.sleep(1)
+            background = pygame.image.load("assets/images/ab-background.png")
 
         # continue
     if LEVEL > 3:
         for enemy in enemies:
             enemy.kill()
-        for enemy in coins:
-            enemy.kill()
+        for coin in coins:
+            coin.kill()
         win.add(W1)
         all_sprites.add(W1)
         if P1.collect_coin(win):
@@ -201,24 +261,23 @@ while True:
             sys.exit()
 
     DISPLAYSURF.blit(background, (0, 0))
-    coin_scores = font_small.render(str(COIN_SCORE), True, BLACK)
-    level_score = font_small.render(f"Level - {LEVEL}", True, BLACK)
+    coin_scores = font_big.render(str(COIN_SCORE), True, BLACK)
+    level_score = font_big.render(f"Level - {LEVEL}", True, BLACK)
     DISPLAYSURF.blit(level_score, (10, 10))
 
     for entity in all_sprites:
-        DISPLAYSURF.blit(entity.image, entity.rect)
-        entity.move()
+        if entity != C1:
+            DISPLAYSURF.blit(entity.image, entity.rect)
+            entity.move()
 
     if P1.collect_coin(coins):
         pygame.mixer.Sound('assets/audio/catch.mp3').play()
         COIN_SCORE += 1
         TOTAL_SCORE += random.randint(0, 10)
-        new_coin = Cup()
         if LIVES != 3:
             LIVES += 1
             H1.changeState(LIVES)
-        coins.add(new_coin)
-        all_sprites.add(new_coin)
+
     for enemy in list(enemies):  # Iterate over a copy of the list to avoid modification issues during iteration
         if pygame.sprite.collide_rect(P1, enemy):
             print(f"Collision with enemy at {enemy.rect}")  # Debug print
@@ -231,7 +290,6 @@ while True:
             enemies.add(new_enemy)
             all_sprites.add(new_enemy)
             break  # Ensure we only handle one collision and then exit the loop
-
     if LIVES == 0:
         # pygame.mixer.Sound('assets/crash.wav').play()
         time.sleep(0.5)
