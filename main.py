@@ -117,10 +117,10 @@ class Player(pygame.sprite.Sprite):
                 self.image = pygame.transform.scale(self.image, (120,120))
                 self.rect.move_ip(0, 5)
 
-        if self.rect.left > 0:
+        if self.rect.left > -30:
             if pressed_keys[K_LEFT]:
                 self.rect.move_ip(-5, 0)
-        if self.rect.right < SCREEN_WIDTH:
+        if self.rect.right < SCREEN_WIDTH-40:
             if pressed_keys[K_RIGHT]:
                 self.rect.move_ip(5, 0)
 
