@@ -36,7 +36,8 @@ game_over = font_biggest.render("Game Over", True, BLACK)
 Won = font_biggest.render("You Won!", True, BLACK)
 # Load images
 background = pygame.image.load("assets/images/pf-background.png")
-
+winimg = pygame.image.load('assets/images/green.png')
+losimg = pygame.image.load('assets/images/lost.png')
 DISPLAYSURF = pygame.display.set_mode((400, 600))
 
 
@@ -267,8 +268,9 @@ while True:
         win.add(W1)
         all_sprites.add(W1)
         if P1.collect_coin(win):
-            DISPLAYSURF.fill(GREEN)
-            DISPLAYSURF.blit(Won, (70, 250))
+            # DISPLAYSURF.fill(GREEN)
+            # DISPLAYSURF.blit(Won, (70, 250))
+            DISPLAYSURF.blit(winimg, (0, 0))
             pygame.display.update()
             pygame.mixer.Sound('assets/audio/win.mp3').play()
             time.sleep(3.5)
@@ -311,11 +313,11 @@ while True:
             all_sprites.add(new_enemy)
             break  # Ensure we only handle one collision and then exit the loop
     if LIVES == 0:
-        pygame.mixer.Sound('assets/audio/bg_sound.mp3')
         pygame.mixer.Sound('assets/audio/dead.mp3').play()
         time.sleep(0.5)
-        DISPLAYSURF.fill(RED)
-        DISPLAYSURF.blit(game_over, (30, 250))
+        # DISPLAYSURF.fill(RED)
+        # DISPLAYSURF.blit(game_over, (30, 250))
+        DISPLAYSURF.blit(losimg, (0,0))
         pygame.display.update()
         for entity in all_sprites:
             entity.kill()
